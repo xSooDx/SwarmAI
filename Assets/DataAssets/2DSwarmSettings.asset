@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5eabd88cc1d6274488e5118c892a5824, type: 3}
+  m_Name: 2DSwarmSettings
+  m_EditorClassIdentifier: 
+  is2D: 1
+  senseRadius: 4
+  avoidanceRadius: 2
+  cohesionWeight: 1
+  avoidanceWeight: 2
+  alignmentWeight: 1.5
+  randomWeight: 1
+  minSpeed: 10
+  maxSpeed: 20
+  startSpeed: 5
+  maxSteeringForce: 10
+  HasUpdateTick: 1
+  numOfEntitiesToConsider: 5
