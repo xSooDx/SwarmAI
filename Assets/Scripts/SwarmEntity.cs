@@ -5,13 +5,15 @@ using UnityEngine.UIElements;
 
 public class SwarmEntity : MonoBehaviour
 {
-    public LinkedListNode<SwarmEntity> Node;
-    public SpacialPartitionGrid<SwarmEntity> PartitionGrid;
+    public LinkedListNode<SwarmEntity> node;
+    public SpacialPartitionGrid<SwarmEntity> partitionGrid;
+    public FlowFieldGrid flowGrid;
     [HideInInspector] public SwarmSettings swarmSettings;
 
     Vector3 cohesionVector;
     Vector3 avoidanceVector;
     Vector3 allignmentVector;
+    Vector3 flowVector;
     Vector3 obstacleVector;
 
     Vector3 velocity;
@@ -22,6 +24,7 @@ public class SwarmEntity : MonoBehaviour
         avoidanceVector = Vector3.zero;
         allignmentVector = Vector3.zero;
         obstacleVector = Vector3.zero;
+        flowVector = Vector3.zero;
 
         Vector3 swarmCenter = Vector3.zero;
         Vector3 position = transform.position;
@@ -30,50 +33,61 @@ public class SwarmEntity : MonoBehaviour
         int obstacleCount = 0;
         bool foundEnough = false;
 
-        PartitionGrid.RunOpperationOnCells(swarmSettings.is2D? Grid3DUtilities.SwarmNeighbourIndexInOrder2D : Grid3DUtilities.SwarmNeighbourIndexInOrder, position, (list, neighbourIndex, cellIndex) =>
-        {
-            if (list != null)
+        partitionGrid.RunOpperationOnCells(
+            swarmSettings.is2D ? Grid3DUtilities.SwarmNeighbourIndexInOrder2D : Grid3DUtilities.SwarmNeighbourIndexInOrder,
+            position,
+            (list, neighbourIndex, cellIndex) =>
             {
-                if (!foundEnough)
+                if (list != null)
                 {
-                    foreach (SwarmEntity entity in list)
+                    if (!foundEnough)
                     {
-                        if (entity.Node == this.Node) continue;
-                        Transform entityTransform = entity.transform;
-                        Vector3 entityPosition = entityTransform.position;
-                        Vector3 offset = position - entityPosition;
-                        float sqDist = Vector3.SqrMagnitude(offset);
-                        if (sqDist < swarmSettings.SenseRadiusSq)
+                        foreach (SwarmEntity entity in list)
                         {
-                            swarmCenter += entityPosition;
-                            allignmentVector += entityTransform.forward;
-
-                            if (sqDist < swarmSettings.AvoidanceRadiusSq)
+                            if (entity.node == this.node) continue;
+                            Transform entityTransform = entity.transform;
+                            Vector3 entityPosition = entityTransform.position;
+                            Vector3 offset = position - entityPosition;
+                            float sqDist = Vector3.SqrMagnitude(offset);
+                            if (sqDist < swarmSettings.SenseRadiusSq)
                             {
-                                avoidanceVector += offset / (1 + sqDist);
+                                swarmCenter += entityPosition;
+                                allignmentVector += entityTransform.forward;
+
+                                if (sqDist < swarmSettings.AvoidanceRadiusSq)
+                                {
+                                    avoidanceVector += offset / (1 + sqDist);
+                                }
+                                count++;
                             }
-
-
-                            count++;
-                        }
-                        if (count >= swarmSettings.numOfEntitiesToConsider)
-                        {
-                            foundEnough = true;
+                            if (count >= swarmSettings.numOfEntitiesToConsider)
+                            {
+                                foundEnough = true;
+                                break;
+                            }
                         }
                     }
                 }
+                else
+                {
+                    obstacleCount++;
+                    Vector3 obstaclePosition = partitionGrid.GetPositionOfCell(cellIndex);
+                    Vector3 offset = position - obstaclePosition;
+                    float sqDist = Vector3.SqrMagnitude(offset);
+                    obstacleVector += offset / (.001f + sqDist);
+                }
             }
-            else
-            {
-                obstacleCount++;
-                Vector3 obstaclePosition = PartitionGrid.GetPositionOfCell(cellIndex);
-                Vector3 offset = position - obstaclePosition;
-                float sqDist = Vector3.SqrMagnitude(offset);
-                obstacleVector += offset / (.001f + sqDist);
-            }
-        });
+        );
 
         Vector3 acceleration = Vector3.zero;
+
+        if (flowGrid)
+        {
+            flowVector = flowGrid.GetValueAtPosition(position);
+            flowVector = Steer(flowVector) * swarmSettings.flowWeight;
+            acceleration += flowVector;
+            Debug.DrawRay(position, flowVector, Color.yellow);
+        }
 
         if (count > 0)
         {
@@ -84,9 +98,6 @@ public class SwarmEntity : MonoBehaviour
             avoidanceVector = Steer(avoidanceVector) * swarmSettings.avoidanceWeight;
             allignmentVector = Steer(allignmentVector) * swarmSettings.alignmentWeight;
             acceleration += allignmentVector + avoidanceVector + cohesionVector;
-
-
-
             //Debug.DrawRay(position, cohesionVector, Color.green);
             //Debug.DrawRay(position, avoidanceVector, Color.red);
             //Debug.DrawRay(position, allignmentVector, Color.blue);
@@ -99,13 +110,13 @@ public class SwarmEntity : MonoBehaviour
 
         if (obstacleCount > 0)
         {
-            obstacleVector = obstacleVector / obstacleCount;
+            obstacleVector /= obstacleCount;
             obstacleVector = Steer(obstacleVector) * 25;
             acceleration += obstacleVector;
             //Debug.DrawRay(position, obstacleVector, Color.magenta);
         }
 
-        if(swarmSettings.is2D)
+        if (swarmSettings.is2D)
         {
             acceleration.y = 0;
         }
@@ -117,7 +128,6 @@ public class SwarmEntity : MonoBehaviour
 
         transform.position = position + velocity * Time.deltaTime;
         transform.forward = dir;
-
     }
 
     Vector3 Steer(Vector3 vector)

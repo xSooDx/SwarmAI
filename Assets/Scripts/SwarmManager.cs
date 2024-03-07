@@ -9,9 +9,12 @@ public class SwarmManager : MonoBehaviour
     public static SwarmManager Instance { get; private set; }
 
     public SwarmEntity m_SwarmEntityPrefab;
+    public FlowFieldGrid m_FlowFieldGrid;
     public Vector3Int m_SimulationGridSize = new Vector3Int(100, 100, 1);
     public float m_SwarmPartitionGridCellSize;
     public SwarmSettings SwarmSettings;
+    [Header("DEBUG")]
+    public bool showGrid;
 
     public SwarmSettings SettingsClone { get; private set; }
 
@@ -36,7 +39,7 @@ public class SwarmManager : MonoBehaviour
     void Start()
     {
         //StartCoroutine(UpdateLoop());
-        
+        m_FlowFieldGrid.CalculateFlowField();
     }
 
     // Update is called once per frame
@@ -47,15 +50,16 @@ public class SwarmManager : MonoBehaviour
             Vector3 oldPosition = entity.transform.position;
             // MoveEntity;
             entity.UpdateTick();
-            m_PartitionGrid.Move(entity.Node, oldPosition, entity.transform.position);
+            m_PartitionGrid.Move(entity.node, oldPosition, entity.transform.position);
         }
     }
 
     public void AddSwarmEntity(SwarmEntity swarmEntity)
     {
-        swarmEntity.Node = m_PartitionGrid.Add(swarmEntity, swarmEntity.transform.position);
-        swarmEntity.PartitionGrid = m_PartitionGrid;
+        swarmEntity.node = m_PartitionGrid.Add(swarmEntity, swarmEntity.transform.position);
+        swarmEntity.partitionGrid = m_PartitionGrid;
         swarmEntity.swarmSettings = SettingsClone;
+        swarmEntity.flowGrid = m_FlowFieldGrid;
         if (swarmEntity.swarmSettings.HasUpdateTick)
         {
             m_SwarmSet.Add(swarmEntity);
@@ -64,7 +68,7 @@ public class SwarmManager : MonoBehaviour
 
     public void RemoveSwarmEntity(SwarmEntity swarmEntity)
     {
-        m_PartitionGrid.Remove(swarmEntity.Node);
+        m_PartitionGrid.Remove(swarmEntity.node);
         if (swarmEntity.swarmSettings.HasUpdateTick)
         {
             m_SwarmSet.Remove(swarmEntity);
@@ -80,7 +84,7 @@ public class SwarmManager : MonoBehaviour
                 Vector3 oldPosition = entity.transform.position;
                 // MoveEntity;
                 entity.UpdateTick();
-                m_PartitionGrid.Move(entity.Node, oldPosition, entity.transform.position);
+                m_PartitionGrid.Move(entity.node, oldPosition, entity.transform.position);
             }
             yield return null;
         }
@@ -88,6 +92,7 @@ public class SwarmManager : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        m_PartitionGrid?.DrawDebugGizmos();
+        if(showGrid)
+            m_PartitionGrid?.DrawDebugGizmos();
     }
 }

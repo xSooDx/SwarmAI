@@ -1,14 +1,19 @@
+using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class SwarmUIControls : MonoBehaviour
 {
     public SwarmManager SwarmManager;
+    public SwarmSpawner SwarmSpawner;
     public Slider cohesionSlider;
     public Slider avoidanceSlider;
     public Slider alignmentSlider;
     public Slider randomSlider;
     public Slider avoidanceRadSlider;
+    public Slider flowSlider;
+    public TextMeshProUGUI spawnCount;
 
 
     private void Start()
@@ -20,6 +25,8 @@ public class SwarmUIControls : MonoBehaviour
         avoidanceRadSlider.minValue = 0;
         avoidanceRadSlider.maxValue = SwarmManager.SettingsClone.senseRadius;
         avoidanceRadSlider.value = SwarmManager.SettingsClone.avoidanceRadius;
+        flowSlider.value = SwarmManager.SettingsClone.flowWeight;
+        SwarmSpawner.OnSpawn += SetSpawnCountText;
     }
 
     // Start is called before the first frame update
@@ -28,7 +35,7 @@ public class SwarmUIControls : MonoBehaviour
         SwarmManager.SettingsClone.cohesionWeight = weight;
     }
 
-    public void UpdateAvoidanceWeignt(float weight)
+    public void UpdateAvoidanceWeight(float weight)
     {
         SwarmManager.SettingsClone.avoidanceWeight = weight;
     }
@@ -42,9 +49,29 @@ public class SwarmUIControls : MonoBehaviour
         SwarmManager.SettingsClone.randomWeight = weight;
     }
 
+    public void UpdateFlowWeight(float weight)
+    {
+        SwarmManager.SettingsClone.flowWeight = weight;
+    }
+
     public void UpdateAvoidanceRadius(float rad)
     {
         SwarmManager.SettingsClone.avoidanceRadius = rad;
         SwarmManager.SettingsClone.OnValuesChanged();
+    }
+
+    public void Spawn(int count)
+    {
+        SwarmSpawner.SpawnEntities(count);
+    }
+
+    public void SetSpawnCountText(int count)
+    {
+        spawnCount.text = "Count: " + count;
+    }
+
+    public void ResetSim()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 }

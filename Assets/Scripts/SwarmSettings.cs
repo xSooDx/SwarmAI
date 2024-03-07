@@ -13,6 +13,7 @@ public class SwarmSettings : ScriptableObject
     public float avoidanceWeight = 1;
     public float alignmentWeight = 1;
     public float randomWeight = 1;
+    public float flowWeight = 1;
 
     public float minSpeed = 0;
     public float maxSpeed = 5;
@@ -37,6 +38,7 @@ public class SwarmSettings : ScriptableObject
         newSettings.avoidanceWeight = this.avoidanceWeight;
         newSettings.alignmentWeight = this.alignmentWeight;
         newSettings.randomWeight = this.randomWeight;
+        newSettings.flowWeight = this.flowWeight;
         newSettings.minSpeed = this.minSpeed;
         newSettings.maxSpeed = this.maxSpeed;
         newSettings.maxSteeringForce = this.maxSteeringForce;

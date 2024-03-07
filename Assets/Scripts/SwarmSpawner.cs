@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class SwarmSpawner : MonoBehaviour
 {
@@ -8,16 +9,17 @@ public class SwarmSpawner : MonoBehaviour
     public SwarmManager swarmManager;
     public float timeBetweenSpawns;
     public float spawnTimeVarience;
+    public UnityAction<int> OnSpawn;
     private float spawnRadius = 1.5f;
-    public int maxSpawnCount = 1000;
 
+    int totalSpawnCount = 0;
     int spawnCount = 0;
+    bool isSpawning = false;
 
     // Start is called before the first frame update
     void Start()
     {
         spawnCount = 0;
-        StartCoroutine(SpawnRoutine());
     }
 
     // Update is called once per frame
@@ -26,8 +28,16 @@ public class SwarmSpawner : MonoBehaviour
 
     }
 
-    IEnumerator SpawnRoutine()
+    public void SpawnEntities(int count)
     {
+        if(isSpawning) return;
+        StartCoroutine(SpawnRoutine(count));
+    }
+
+    IEnumerator SpawnRoutine(int count)
+    {
+        spawnCount = 0;
+        isSpawning = true;
         while (true)
         {
             yield return new WaitForSeconds(timeBetweenSpawns + Random.Range(-spawnTimeVarience, spawnTimeVarience));
@@ -35,7 +45,13 @@ public class SwarmSpawner : MonoBehaviour
             if(swarmManager.SettingsClone.is2D) spawnPos.y = 0;
             Instantiate(entityToSpawn, spawnPos, transform.rotation);
             spawnCount++;
-            if (spawnCount >= maxSpawnCount) { yield break; }
+            totalSpawnCount++;
+            OnSpawn?.Invoke(totalSpawnCount);
+            if (spawnCount >= count) 
+            {
+                isSpawning = false;
+                yield break; 
+            }
         }
     }
 
