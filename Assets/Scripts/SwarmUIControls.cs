@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Threading;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -14,6 +16,7 @@ public class SwarmUIControls : MonoBehaviour
     public Slider avoidanceRadSlider;
     public Slider flowSlider;
     public TextMeshProUGUI spawnCount;
+    public FlowFieldGrid flowFieldGrid;
 
 
     private void Start()
@@ -27,6 +30,8 @@ public class SwarmUIControls : MonoBehaviour
         avoidanceRadSlider.value = SwarmManager.SettingsClone.avoidanceRadius;
         flowSlider.value = SwarmManager.SettingsClone.flowWeight;
         SwarmSpawner.OnSpawn += SetSpawnCountText;
+
+        StartCoroutine(UpdateFlowField());
     }
 
     // Start is called before the first frame update
@@ -73,5 +78,18 @@ public class SwarmUIControls : MonoBehaviour
     public void ResetSim()
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    IEnumerator UpdateFlowField()
+    {
+        //Thread t = null;
+        while (true)
+        {
+            //t?.Join();
+            yield return new WaitForSeconds(0.1f);
+            //t = new Thread(() => { flowFieldGrid.CalculateFlowField(); });
+            //t.Start();
+            flowFieldGrid.CalculateFlowField();
+        }
     }
 }

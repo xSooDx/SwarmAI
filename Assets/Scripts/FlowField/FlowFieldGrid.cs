@@ -53,12 +53,12 @@ public class FlowFieldGrid : MonoBehaviour
             for (int j = 0; j < m_GridSize.y; j++) m_IntegrationField[i, j] = float.MaxValue;
         }
 
-        float startTime = Time.realtimeSinceStartup;
+        //float startTime = Time.realtimeSinceStartup;
         CalculateCostField();
         CalculateIntegrationField();
         CalculateFlowFieldVectors();
-        float endTime = Time.realtimeSinceStartup;
-        Debug.Log($"FlowField Time: {endTime - startTime}");
+        //float endTime = Time.realtimeSinceStartup;
+        //Debug.Log($"FlowField Time: {endTime - startTime}");
     }
 
     void CalculateCostField()
