@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &3864549657800201365
+--- !u!1 &4200238732492592049
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,46 +8,53 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 7851645940040526138}
-  - component: {fileID: 6051527202853555675}
+  - component: {fileID: 725914249455827195}
+  - component: {fileID: 4599000455350048657}
   m_Layer: 0
-  m_Name: SwarmManager
+  m_Name: FlowFieldGrid
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &7851645940040526138
+--- !u!4 &725914249455827195
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3864549657800201365}
+  m_GameObject: {fileID: 4200238732492592049}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.3736571, y: 4.297468, z: -0.022071803}
+  m_LocalPosition: {x: -710.071, y: -320.5445, z: 2.289887}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 0
+  m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &6051527202853555675
+--- !u!114 &4599000455350048657
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3864549657800201365}
+  m_GameObject: {fileID: 4200238732492592049}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ef60c67c58615c141a46b72ef68d092d, type: 3}
+  m_Script: {fileID: 11500000, guid: b065db4b2f124404498c0d8633affe87, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_SwarmEntityPrefab: {fileID: 3911792691140938985, guid: 71e8395d62a33fb41a1f4810e45f35c4,
-    type: 3}
-  m_FlowFieldGrid: {fileID: 0}
-  m_SimulationGridSize: {x: 45, y: 1, z: 25}
-  m_SwarmPartitionGridCellSize: 4
-  SwarmSettings: {fileID: 11400000, guid: 72de897abd422234dbe50dbf3c3de422, type: 2}
-  showGrid: 1
+  m_GridSize: {x: 120, y: 67}
+  m_GridCellSize: 1.5
+  m_CostModifierMask:
+    serializedVersion: 2
+    m_Bits: 65
+  m_FlowModifierMask:
+    serializedVersion: 2
+    m_Bits: 0
+  m_flowTestLayer: 31
+  debugCostField: 0
+  debugIntegrationField: 0
+  debugFlowField: 1
+  debugTestVector: 0
+  testVec: {x: 0, y: 0, z: 0}

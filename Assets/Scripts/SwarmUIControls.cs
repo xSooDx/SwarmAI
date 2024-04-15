@@ -9,6 +9,10 @@ public class SwarmUIControls : MonoBehaviour
 {
     public SwarmManager SwarmManager;
     public SwarmSpawner SwarmSpawner;
+    public FlowFieldGrid flowFieldGrid;
+    public Transform playerSpawn;
+
+    [Space()]
     public Slider cohesionSlider;
     public Slider avoidanceSlider;
     public Slider alignmentSlider;
@@ -16,7 +20,7 @@ public class SwarmUIControls : MonoBehaviour
     public Slider avoidanceRadSlider;
     public Slider flowSlider;
     public TextMeshProUGUI spawnCount;
-    public FlowFieldGrid flowFieldGrid;
+    public GameObject playerPrefab;
 
 
     private void Start()
@@ -30,8 +34,6 @@ public class SwarmUIControls : MonoBehaviour
         avoidanceRadSlider.value = SwarmManager.SettingsClone.avoidanceRadius;
         flowSlider.value = SwarmManager.SettingsClone.flowWeight;
         SwarmSpawner.OnSpawn += SetSpawnCountText;
-
-        StartCoroutine(UpdateFlowField());
     }
 
     // Start is called before the first frame update
@@ -80,16 +82,8 @@ public class SwarmUIControls : MonoBehaviour
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
-    IEnumerator UpdateFlowField()
+    public void SpawnPlayer()
     {
-        //Thread t = null;
-        while (true)
-        {
-            //t?.Join();
-            yield return new WaitForSeconds(0.1f);
-            //t = new Thread(() => { flowFieldGrid.CalculateFlowField(); });
-            //t.Start();
-            flowFieldGrid.CalculateFlowField();
-        }
+        Instantiate(playerPrefab, playerSpawn.position, Quaternion.identity);
     }
 }

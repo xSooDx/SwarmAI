@@ -84,9 +84,9 @@ public class SwarmEntity : MonoBehaviour
         if (flowGrid)
         {
             flowVector = flowGrid.GetValueAtPosition(position);
-            flowVector = Steer(flowVector) * swarmSettings.flowWeight;
+            flowVector = Steer(flowVector) * (flowVector.y > 0? 25f : swarmSettings.flowWeight);
             acceleration += flowVector;
-            Debug.DrawRay(position, flowVector, Color.yellow);
+            //Debug.DrawRay(position, flowVector, Color.yellow);
         }
 
         if (count > 0)

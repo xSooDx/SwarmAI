@@ -11,7 +11,10 @@ public class FlowFieldGrid : MonoBehaviour
 {
     public Vector2Int m_GridSize = Vector2Int.one * 10;
     public float m_GridCellSize = 1;
-    public LayerMask m_GridMask;
+    public LayerMask m_CostModifierMask;
+    public LayerMask m_FlowModifierMask;
+
+    public int m_flowTestLayer = 31;
 
     Vector3[,] m_FlowGrid;
     Vector2[,] m_FlowDirection;
@@ -30,65 +33,114 @@ public class FlowFieldGrid : MonoBehaviour
 
     Vector2Int minIndexVal;
     Vector2Int maxIndexVal;
-
+    LayerMask testLayer;
+    float gridHalfCellSize;
+    float defaultIVal = 100000f;
+    float defaultWallIVal = 200000f;
 
     private void Start()
     {
-        CalculateFlowField();
+        StartCoroutine(UpdateFlowField());
     }
 
     public void CalculateFlowField()
     {
-        m_IntegrationQueue = new Queue<Vector2Int>(m_GridSize.x * m_GridSize.y / 2);
-        m_FlowGrid = new Vector3[m_GridSize.x, m_GridSize.y];
-        m_IntegrationField = new float[m_GridSize.x, m_GridSize.y];
-        m_CostField = new byte[m_GridSize.x, m_GridSize.y];
-        m_FlowDirection = new Vector2[m_GridSize.x, m_GridSize.y];
+        InitGrid();
 
+        testLayer = 1 << m_flowTestLayer;
         maxIndexVal = m_GridSize - Vector2Int.one;
         minIndexVal = Vector2Int.zero;
+        gridHalfCellSize = m_GridCellSize / 2f;
 
-        for (int i = 0; i < m_GridSize.x; i++)
-        {
-            for (int j = 0; j < m_GridSize.y; j++) m_IntegrationField[i, j] = float.MaxValue;
-        }
+
+
 
         //float startTime = Time.realtimeSinceStartup;
-        CalculateCostField();
+        DetectCostObstacles();
+        //CalculateCostField();
         CalculateIntegrationField();
         CalculateFlowFieldVectors();
         //float endTime = Time.realtimeSinceStartup;
         //Debug.Log($"FlowField Time: {endTime - startTime}");
     }
 
-    void CalculateCostField()
+    private void InitGrid()
     {
-
-        Grid2DUtilities.ActionOnAllCells(m_FlowGrid, (Vector3 value, int i, int j) =>
+        if (m_IntegrationQueue == null)
         {
-            Collider[] obstacles = Physics.OverlapBox(IndexToWorldSpace(i, j), Vector3.one * m_GridCellSize, Quaternion.identity, m_GridMask);
-            if (obstacles.Length > 0)
-            {
-                if (obstacles[0].TryGetComponent<FlowFieldObstacle>(out FlowFieldObstacle ffo))
-                {
-                    byte cost = ffo.m_FlowFieldModifier;
-                    m_CostField[i, j] = cost;
-                    if (cost == 0)
-                    {
-                        m_IntegrationQueue.Enqueue(new Vector2Int(i, j));
-                        m_IntegrationField[i, j] = 0;
-                    }
-                }
-                else
-                {
-                    m_CostField[i, j] = byte.MaxValue;
-                }
-            }
-            else
+            m_IntegrationQueue = new Queue<Vector2Int>(m_GridSize.x * m_GridSize.y / 2);
+        }
+        else
+        {
+            m_IntegrationQueue.Clear();
+        }
+
+        m_CostField ??= new byte[m_GridSize.x, m_GridSize.y];
+
+        m_IntegrationField ??= new float[m_GridSize.x, m_GridSize.y];
+
+        m_FlowDirection ??= new Vector2[m_GridSize.x, m_GridSize.y];
+        
+        m_FlowGrid ??= new Vector3[m_GridSize.x, m_GridSize.y];
+
+        for (int i = 0; i < m_GridSize.x; i++)
+        {
+            for (int j = 0; j < m_GridSize.y; j++)
             {
                 m_CostField[i, j] = 1;
+                m_IntegrationField[i, j] = defaultIVal;
+                m_FlowDirection[i, j] = Vector2.zero;
+                m_FlowGrid[i, j] = Vector3.zero;
             }
-        });
+        }
+    }
+
+    private void DetectCostObstacles()
+    {
+        Vector3 halfSize = new Vector3(m_GridSize.x * m_GridCellSize, 1, m_GridSize.y * m_GridCellSize) / 2f;
+        Vector3 center = halfSize;
+        var colliders = Physics.OverlapBox(center, halfSize, Quaternion.identity, m_CostModifierMask);
+        //Debug.Log(colliders.Length);
+        foreach (var c in colliders)
+        {
+            Vector2Int minI = WorldPosToCellIndex(c.bounds.min);
+            Vector2Int maxI = WorldPosToCellIndex(c.bounds.max);
+            int tempLayer = c.gameObject.layer;
+            c.gameObject.layer = m_flowTestLayer;
+
+            for (int i = minI.x; i <= maxI.x; ++i)
+            {
+                for (int j = minI.y; j <= maxI.y; ++j)
+                {
+                    if (IsIndexInsideGrid(i, j))
+                    {
+                        Collider[] obstacles = Physics.OverlapBox(IndexToWorldSpace(i, j), Vector3.one * gridHalfCellSize, Quaternion.identity, testLayer);
+                        if (obstacles.Length > 0)
+                        {
+                            if (obstacles[0].TryGetComponent<FlowFieldObstacle>(out FlowFieldObstacle ffo))
+                            {
+                                byte cost = ffo.m_FlowFieldModifier;
+                                m_CostField[i, j] = cost > m_CostField[i, j] ? cost : m_CostField[i, j];
+                                if (cost == 0)
+                                {
+                                    m_IntegrationQueue.Enqueue(new Vector2Int(i, j));
+                                    m_IntegrationField[i, j] = 0;
+                                }
+                            }
+                            else
+                            {
+                                //m_IntegrationQueue.Enqueue(new Vector2Int(i, j));
+                                m_CostField[i, j] = byte.MaxValue;
+                                m_IntegrationField[i, j] = defaultWallIVal;
+                            }
+                        }
+                    }
+                }
+            }
+            c.gameObject.layer = tempLayer;
+            //Handles.DrawWireCube(c.bounds.center, c.bounds.size);
+            //Gizmos.DrawCube(c.bounds.center, c.bounds.size);
+        }
     }
 
     void CalculateIntegrationField()
@@ -109,13 +161,13 @@ public class FlowFieldGrid : MonoBehaviour
 
                         if (value < m_IntegrationField[p.x, p.y])
                         {
-                            m_IntegrationField[p.x, p.y] = value;
+                            m_IntegrationField[p.x, p.y] = Mathf.Min(value, defaultIVal);
                             m_IntegrationQueue.Enqueue(p);
                         }
                     }
                     else
                     {
-                        m_IntegrationField[p.x, p.y] = short.MaxValue;
+                        m_IntegrationField[p.x, p.y] = defaultWallIVal;
                     }
                 }
             }
@@ -147,73 +199,37 @@ public class FlowFieldGrid : MonoBehaviour
                 {
                     isCellOOB = isOOB = useMin = true;
                 }
-                else if(!useMin)
+                else if (!useMin)
                 {
-                    isWall = useMin = m_IntegrationField[idx.x, idx.y] == short.MaxValue;
+                    isWall = useMin = m_IntegrationField[idx.x, idx.y] > defaultIVal;
                 }
 
                 if (!isCellOOB)
                 {
-                    //count++;
-                    if (useMin)
+                    //if (useMin)
+                    //{
+                    //    if (m_IntegrationField[idx.x, idx.y] < currentMin)
+                    //    {
+                    //        currentMin = m_IntegrationField[idx.x, idx.y];
+                    //        minFlowDir = v;
+                    //    }
+                    //}
+                    //else
                     {
-                        if(m_IntegrationField[idx.x, idx.y] < currentMin)
-                        {
-                            currentMin = m_IntegrationField[idx.x, idx.y];
-                            minFlowDir = v;
-                        }
-                        //minFlowDir += (Vector2)v * -m_IntegrationField[idx.x, idx.y];
-                    }
-                    else
-                    {
-                        organicFlowDir += (Vector2)v * (1.0f / m_IntegrationField[idx.x, idx.y]);
+                        organicFlowDir += ((Vector2)v) / (1f + m_IntegrationField[idx.x, idx.y]);
                     }
                 }
             }
-            Vector2 vec = (useMin ? minFlowDir : organicFlowDir).normalized;
+            Vector2 vec = (/*useMin ? minFlowDir :*/ organicFlowDir).normalized;
             m_FlowDirection[x, y] = vec;
-            if (isOOB || isWall) vec *= 10f;
-            m_FlowGrid[x, y] = new Vector3(vec.x, 0, vec.y);
+            m_FlowGrid[x, y] = new Vector3(vec.x, isOOB || isWall ? 1f : 0, vec.y);
         });
-
-        //Grid2DUtilities.ActionOnAllCells(m_FlowGrid, (Vector3 val, int x, int y) =>
-        //{
-        //    Vector3 flowValue = Vector3.zero;
-        //    short currentCellValue = m_IntegrationField[x, y];
-        //    if (currentCellValue == 0)
-        //    {
-        //        m_FlowGrid[x, y] = Vector3.zero;
-        //        return;
-        //    }
-        //    float largestDiff = 0;
-        //    Vector2Int flowDir = Vector2Int.zero;
-        //    for (int i = -1; i <= 1; i++)
-        //    {
-        //        for (int j = -1; j <= 1; j++)
-        //        {
-        //            if (IsIndexInsideGrid(x + i, y + j))
-        //            {
-        //                float diff = currentCellValue;
-        //                diff -= m_IntegrationField[x + i, y + j];
-        //                diff -= 0.2f * (i & 1) * (j & 1);
-        //                if (diff > largestDiff)
-        //                {
-        //                    largestDiff = diff;
-        //                    flowValue = new(i, 0, j);
-        //                    flowDir = new Vector2Int(i, j);
-        //                }
-        //            }
-        //        }
-        //    }
-        //    m_FlowDirection[x, y] = flowDir;
-        //    m_FlowGrid[x,y] = flowValue;
-        //});
     }
 
 
     public Vector2Int WorldPosToCellIndex(Vector3 position)
     {
-        Vector3 pos = position - transform.position;
+        Vector3 pos = position;
         Vector2Int index = Vector2Int.zero;
         index.x = Mathf.RoundToInt(pos.x / m_GridCellSize);
         index.y = Mathf.RoundToInt(pos.z / m_GridCellSize);
@@ -226,7 +242,7 @@ public class FlowFieldGrid : MonoBehaviour
         Vector3 offset = Vector3.zero;
         offset.x = m_GridCellSize * x;
         offset.z = m_GridCellSize * y;
-        return transform.position + offset;
+        return offset;
     }
     public Vector3 IndexToWorldSpace(Vector2Int index) => IndexToWorldSpace(index.x, index.y);
 
@@ -241,7 +257,7 @@ public class FlowFieldGrid : MonoBehaviour
 
         Vector3 size = new Vector3(m_GridSize.x, 0, m_GridSize.y) * m_GridCellSize;
         Gizmos.color = Color.blue;
-        Gizmos.DrawWireCube(transform.position + size / 2, size);
+        Gizmos.DrawWireCube(size / 2, size);
 
         //ActionOnAllCells((cellValue, i, j) =>
         //{
@@ -262,14 +278,14 @@ public class FlowFieldGrid : MonoBehaviour
             Grid2DUtilities.ActionOnAllCells(m_FlowGrid, (cellValue, i, j) =>
             {
                 Vector3 cellPosition = IndexToWorldSpace(i, j);
-                Gizmos.color = Color.white;
-                Gizmos.DrawWireCube(cellPosition, Vector3.one * m_GridCellSize);
+                //Gizmos.color = Color.gray;
+                //Gizmos.DrawWireCube(cellPosition, Vector3.one * m_GridCellSize);
 
 
-                Debug.DrawLine(cellPosition, cellPosition + cellValue * 0.5f * m_GridCellSize, Color.red);
+                Debug.DrawLine(cellPosition, cellPosition + cellValue * 0.5f * m_GridCellSize, Color.magenta);
                 Debug.DrawLine(cellPosition, cellPosition + new Vector3(m_FlowDirection[i, j].x, 0, m_FlowDirection[i, j].y) * 0.5f * m_GridCellSize, Color.red);
                 //Debug.DrawRay(cellPosition, new Vector3(m_FlowDirection[i, j].x, 0, m_FlowDirection[i, j].y) * 0.5f * m_GridCellSize, Color.red);
-                Gizmos.color = Color.red;
+                Gizmos.color = Color.yellow;
                 Gizmos.DrawSphere(cellPosition, .1f);
                 //if (m_CostField != null)
                 //{
@@ -326,9 +342,43 @@ public class FlowFieldGrid : MonoBehaviour
             Grid2DUtilities.ActionOnAllCells(m_IntegrationField, (float value, int i, int j) =>
             {
                 Vector3 cellPosition = IndexToWorldSpace(i, j);
-                Handles.Label(cellPosition + Vector3.up * 3, "I: " + WorldPosToCellIndex(cellPosition), style3);
+                Handles.Label(cellPosition + Vector3.up * 3, "" + WorldPosToCellIndex(cellPosition), style3);
             });
         }
+
+        //Vector3 halfSize = new Vector3(m_GridSize.x * m_GridCellSize, 1, m_GridSize.y * m_GridCellSize) / 2f;
+        //Vector3 center = halfSize;
+        //var colliders = Physics.OverlapBox(center, halfSize, Quaternion.identity, m_GridMask);
+        ////Debug.Log(colliders.Length);
+        //testLayer = 1 << m_flowTestLayer;
+        //gridHalfCellSize = m_GridCellSize / 2f;
+        //foreach (var c in colliders)
+        //{
+        //    Vector2Int minI = WorldPosToCellIndex(c.bounds.min);
+        //    Vector2Int maxI = WorldPosToCellIndex(c.bounds.max);
+        //    int tempLayer = c.gameObject.layer;
+        //    c.gameObject.layer = m_flowTestLayer;
+
+        //    for (int i = minI.x; i <= maxI.x; ++i)
+        //    {
+        //        for (int j = minI.y; j <= maxI.y; ++j)
+        //        {
+        //            Collider[] obstacles = Physics.OverlapBox(IndexToWorldSpace(i, j), Vector3.one * gridHalfCellSize, Quaternion.identity, testLayer);
+        //            if (obstacles.Length > 0)
+        //            {
+        //                Gizmos.color = Color.yellow;
+        //            }
+        //            else
+        //            {
+        //                Gizmos.color = Color.red;
+        //            }
+        //            Gizmos.DrawCube(IndexToWorldSpace(i, j), Vector3.one * m_GridCellSize);
+        //        }
+        //    }
+        //    c.gameObject.layer = tempLayer;
+        //    //Handles.DrawWireCube(c.bounds.center, c.bounds.size);
+        //    //Gizmos.DrawCube(c.bounds.center, c.bounds.size);
+        //}
     }
 
     public Vector3 GetValueAtPosition(Vector3 position)
@@ -347,5 +397,17 @@ public class FlowFieldGrid : MonoBehaviour
         return IndexToWorldSpace(WorldPosToCellIndex(point));
     }
 
+    IEnumerator UpdateFlowField()
+    {
+        //Thread t = null;
+        while (true)
+        {
+            //t?.Join();
+            yield return new WaitForSeconds(0.1f);
+            //t = new Thread(() => { flowFieldGrid.CalculateFlowField(); });
+            //t.Start();
+            CalculateFlowField();
+        }
+    }
     // ToDo: Find Nearest Position inside grid
 }

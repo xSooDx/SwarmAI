@@ -92,7 +92,15 @@ public class SwarmManager : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        if(showGrid)
+        if (showGrid)
+        {
             m_PartitionGrid?.DrawDebugGizmos();
+        }
+
+        Gizmos.color = Color.yellow;
+        Vector3 size = (Vector3)m_SimulationGridSize * m_SwarmPartitionGridCellSize;
+        Vector3 center = size / 2;
+
+        Gizmos.DrawWireCube(center, size);
     }
 }
