@@ -20,6 +20,7 @@ public class FlowFieldGrid : MonoBehaviour
     Vector2[,] m_FlowDirection;
     byte[,] m_CostField;
     float[,] m_IntegrationField;
+    byte[,] m_EffectField;
     Queue<Vector2Int> m_IntegrationQueue;
 
     [Header("DEBUG")]
@@ -75,6 +76,8 @@ public class FlowFieldGrid : MonoBehaviour
             m_IntegrationQueue.Clear();
         }
 
+        m_EffectField ??= new byte[m_GridSize.x, m_GridSize.y];
+
         m_CostField ??= new byte[m_GridSize.x, m_GridSize.y];
 
         m_IntegrationField ??= new float[m_GridSize.x, m_GridSize.y];
@@ -91,6 +94,7 @@ public class FlowFieldGrid : MonoBehaviour
                 m_IntegrationField[i, j] = defaultIVal;
                 m_FlowDirection[i, j] = Vector2.zero;
                 m_FlowGrid[i, j] = Vector3.zero;
+                m_EffectField[i, j] = 0;
             }
         }
     }
@@ -120,11 +124,17 @@ public class FlowFieldGrid : MonoBehaviour
                             if (obstacles[0].TryGetComponent<FlowFieldObstacle>(out FlowFieldObstacle ffo))
                             {
                                 byte cost = ffo.m_FlowFieldModifier;
-                                m_CostField[i, j] = cost > m_CostField[i, j] ? cost : m_CostField[i, j];
-                                if (cost == 0)
+                                if (cost > m_CostField[i, j])
                                 {
+                                    m_CostField[i, j] = cost;
+                                    m_EffectField[i, j] = ffo.m_EffectModifer;
+                                }
+                                else if (cost == 0)
+                                {
+                                    m_CostField[i, j] = cost;
                                     m_IntegrationQueue.Enqueue(new Vector2Int(i, j));
                                     m_IntegrationField[i, j] = 0;
+                                    m_EffectField[i, j] = ffo.m_EffectModifer;
                                 }
                             }
                             else
@@ -188,7 +198,6 @@ public class FlowFieldGrid : MonoBehaviour
             bool isWall = false;
             bool useMin = false;
             bool isOOB = false;
-            float currentMin = float.MaxValue;
             Vector2 minFlowDir = Vector2.zero;
             Vector2 organicFlowDir = Vector2.zero;
             foreach (Vector2Int v in Grid2DUtilities.Neighbours8)
@@ -386,6 +395,21 @@ public class FlowFieldGrid : MonoBehaviour
         Vector2Int index = WorldPosToCellIndex(position);
         index.Clamp(minIndexVal, maxIndexVal);
         return m_FlowGrid[index.x, index.y];
+    }
+
+    public byte GetEffectAtPosition(Vector3 position)
+    {
+        Vector2Int index = WorldPosToCellIndex(position);
+        index.Clamp(minIndexVal, maxIndexVal);
+        return m_EffectField[index.x, index.y];
+    }
+
+    public void GetValueAndEffectAtPosition(Vector3 position, out Vector3 outVal, out byte outEffect)
+    {
+        Vector2Int index = WorldPosToCellIndex(position);
+        index.Clamp(minIndexVal, maxIndexVal);
+        outVal = m_FlowGrid[index.x, index.y];
+        outEffect = m_EffectField[index.x, index.y];
     }
 
     public Vector2 GetDirectionAtIndex(int x, int y) => m_FlowDirection[x, y];

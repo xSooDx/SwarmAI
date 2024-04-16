@@ -23,6 +23,11 @@ public class PlayerController : MonoBehaviour
         HandleInput();
     }
 
+    private void LateUpdate()
+    {
+        
+    }
+
     void HandleInput()
     {
         Vector3 moveInput = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical"));

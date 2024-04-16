@@ -10,6 +10,9 @@ public class SwarmEntity : MonoBehaviour
     public FlowFieldGrid flowGrid;
     [HideInInspector] public SwarmSettings swarmSettings;
 
+    public float maxSpeedModifier = 1f;
+
+    byte flowEffect;
     Vector3 cohesionVector;
     Vector3 avoidanceVector;
     Vector3 allignmentVector;
@@ -83,8 +86,9 @@ public class SwarmEntity : MonoBehaviour
 
         if (flowGrid)
         {
-            flowVector = flowGrid.GetValueAtPosition(position);
+            flowGrid.GetValueAndEffectAtPosition(position, out flowVector, out flowEffect);
             flowVector = Steer(flowVector) * (flowVector.y > 0? 25f : swarmSettings.flowWeight);
+            maxSpeedModifier = flowEffect == 0 ? 1 : 0.75f;
             acceleration += flowVector;
             //Debug.DrawRay(position, flowVector, Color.yellow);
         }
@@ -123,7 +127,7 @@ public class SwarmEntity : MonoBehaviour
         velocity += acceleration * Time.deltaTime;
         float speed = velocity.magnitude;
         Vector3 dir = velocity.normalized;
-        speed = Mathf.Clamp(speed, swarmSettings.minSpeed, swarmSettings.maxSpeed);
+        speed = Mathf.Clamp(speed, swarmSettings.minSpeed, swarmSettings.maxSpeed) * maxSpeedModifier;
         velocity = dir * speed;
 
         transform.position = position + velocity * Time.deltaTime;
