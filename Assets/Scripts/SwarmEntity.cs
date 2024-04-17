@@ -88,7 +88,7 @@ public class SwarmEntity : MonoBehaviour
         {
             flowGrid.GetValueAndEffectAtPosition(position, out flowVector, out flowEffect);
             flowVector = Steer(flowVector) * (flowVector.y > 0? 25f : swarmSettings.flowWeight);
-            maxSpeedModifier = flowEffect == 0 ? 1 : 0.75f;
+            maxSpeedModifier = flowEffect == 0 ? 1f : 0.8f;
             acceleration += flowVector;
             //Debug.DrawRay(position, flowVector, Color.yellow);
         }

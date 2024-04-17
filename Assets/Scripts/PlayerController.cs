@@ -47,7 +47,7 @@ public class PlayerController : MonoBehaviour
                 {
                     if (Vector3.SqrMagnitude(entity.transform.position - transform.position) < collisionRadiusSq)
                     {
-                        Destroy(entity.gameObject);
+                        //Destroy(entity.gameObject);
                         health--;
                         if (health <= 0)
                         {
@@ -62,13 +62,15 @@ public class PlayerController : MonoBehaviour
 
     private void Dead()
     {
-        SwarmUIControls.Instance.ResetSim();
+        Destroy(gameObject);
+        SwarmUIControls.Instance.ShowStart();
     }
 
     void HandleInput()
     {
         Vector3 moveInput = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical"));
-        transform.forward = moveInput;
+        if(moveInput != Vector3.zero)
+            transform.forward = moveInput;
         moveInput.Normalize();
         moveInput = moveInput * moveSpeed * Time.deltaTime;
         charController.Move(moveInput);

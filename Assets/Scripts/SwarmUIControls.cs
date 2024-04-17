@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Threading;
 using TMPro;
@@ -20,8 +21,12 @@ public class SwarmUIControls : MonoBehaviour
     public Slider randomSlider;
     public Slider avoidanceRadSlider;
     public Slider flowSlider;
+    public Slider minSpeedSlider;
+    public Slider maxSpeedSlider;
     public TextMeshProUGUI spawnCount;
     public GameObject playerPrefab;
+
+    public GameObject startButton;
 
     private void Awake()
     {
@@ -38,6 +43,8 @@ public class SwarmUIControls : MonoBehaviour
         avoidanceRadSlider.maxValue = SwarmManager.SettingsClone.senseRadius;
         avoidanceRadSlider.value = SwarmManager.SettingsClone.avoidanceRadius;
         flowSlider.value = SwarmManager.SettingsClone.flowWeight;
+        minSpeedSlider.value = SwarmManager.SettingsClone.minSpeed;
+        maxSpeedSlider.value = SwarmManager.SettingsClone.maxSpeed;
         SwarmSpawner.OnSpawn += SetSpawnCountText;
     }
 
@@ -102,6 +109,12 @@ public class SwarmUIControls : MonoBehaviour
     public void SpawnPlayer()
     {
         Instantiate(playerPrefab, playerSpawn.position, Quaternion.identity);
-        Destroy(playerSpawn.gameObject);
+        playerSpawn.gameObject.SetActive(false);
+    }
+
+    internal void ShowStart()
+    {
+        startButton.gameObject.SetActive(true);
+        playerSpawn.gameObject.SetActive(true);
     }
 }

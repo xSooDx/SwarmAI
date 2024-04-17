@@ -20,7 +20,7 @@ MonoBehaviour:
   alignmentWeight: 1.5
   randomWeight: 1
   flowWeight: 1
-  minSpeed: 10
+  minSpeed: 5
   maxSpeed: 20
   startSpeed: 5
   maxSteeringForce: 10

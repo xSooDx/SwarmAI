@@ -3,9 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Events;
-using UnityEngine.UIElements;
-using static UnityEngine.Rendering.DebugUI;
 
 public class FlowFieldGrid : MonoBehaviour
 {
@@ -261,6 +258,7 @@ public class FlowFieldGrid : MonoBehaviour
 
     public bool IsWorldPosInsideGrid(Vector3 position) => IsIndexInsideGrid(WorldPosToCellIndex(position));
 
+#if UNITY_EDITOR
     private void OnDrawGizmos()
     {
 
@@ -389,6 +387,7 @@ public class FlowFieldGrid : MonoBehaviour
         //    //Gizmos.DrawCube(c.bounds.center, c.bounds.size);
         //}
     }
+#endif
 
     public Vector3 GetValueAtPosition(Vector3 position)
     {
