@@ -11,4 +11,14 @@ public class Pickup : MonoBehaviour
             Destroy(this.gameObject);
         }
     }
+
+    private void OnEnable()
+    {
+        CoinManager.Instance.AddCoin();
+    }
+
+    private void OnDisable()
+    {
+        CoinManager.Instance.RemoveCoin();
+    }
 }

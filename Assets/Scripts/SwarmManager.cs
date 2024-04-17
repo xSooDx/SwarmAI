@@ -19,7 +19,7 @@ public class SwarmManager : MonoBehaviour
     public SwarmSettings SettingsClone { get; private set; }
 
     HashSet<SwarmEntity> m_SwarmSet;
-    SpacialPartitionGrid<SwarmEntity> m_PartitionGrid;
+    public SpacialPartitionGrid<SwarmEntity> m_PartitionGrid { get; private set;}
 
     private void Awake()
     {

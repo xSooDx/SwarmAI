@@ -258,7 +258,26 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: SWARM SIMULATION
+  m_text: '<b>SWARM SIMULATION SANDBOX</b>
+
+
+    This game is a interactive simulation
+    of swarm behaviour algorithms.
+
+
+    It uses the BOIDs algorithim for the flocking
+    behaviour, combined with flow field path finding to navigate around walls and
+    hazards.
+
+
+    There are sliders to control the settings of the swarm behaviour,
+    as well as a tool to build your own level to play.
+
+
+    To begin, click on the
+    ''Start'' button and explore this sandbox
+
+'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -1886,7 +1905,7 @@ PrefabInstance:
     - target: {fileID: 6100332248573357895, guid: d42b118d13aa6b740b544e926706b02c,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 68.8
+      value: 149.7
       objectReference: {fileID: 0}
     - target: {fileID: 6100332248573357895, guid: d42b118d13aa6b740b544e926706b02c,
         type: 3}
@@ -1896,7 +1915,7 @@ PrefabInstance:
     - target: {fileID: 6100332248573357895, guid: d42b118d13aa6b740b544e926706b02c,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 38.7
+      value: 89.2
       objectReference: {fileID: 0}
     - target: {fileID: 6100332248573357895, guid: d42b118d13aa6b740b544e926706b02c,
         type: 3}

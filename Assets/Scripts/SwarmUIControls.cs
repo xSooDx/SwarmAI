@@ -7,6 +7,7 @@ using UnityEngine.UI;
 
 public class SwarmUIControls : MonoBehaviour
 {
+    public static SwarmUIControls Instance { get; private set; }
     public SwarmManager SwarmManager;
     public SwarmSpawner SwarmSpawner;
     public FlowFieldGrid flowFieldGrid;
@@ -22,6 +23,10 @@ public class SwarmUIControls : MonoBehaviour
     public TextMeshProUGUI spawnCount;
     public GameObject playerPrefab;
 
+    private void Awake()
+    {
+        Instance = this;
+    }
 
     private void Start()
     {
@@ -61,6 +66,18 @@ public class SwarmUIControls : MonoBehaviour
         SwarmManager.SettingsClone.flowWeight = weight;
     }
 
+    public void UpdateMinSpeed(float weight)
+    {
+        SwarmManager.SettingsClone.minSpeed = weight;
+    }
+
+
+    public void UpdateMaxSpeed(float weight)
+    {
+        SwarmManager.SettingsClone.maxSpeed = weight;
+    }
+
+
     public void UpdateAvoidanceRadius(float rad)
     {
         SwarmManager.SettingsClone.avoidanceRadius = rad;
@@ -85,5 +102,6 @@ public class SwarmUIControls : MonoBehaviour
     public void SpawnPlayer()
     {
         Instantiate(playerPrefab, playerSpawn.position, Quaternion.identity);
+        Destroy(playerSpawn.gameObject);
     }
 }
