@@ -12,6 +12,8 @@ public class BuildController : MonoBehaviour
         Wall = 1,
         Hazard = 2,
         Coin = 3,
+        Attractor = 4,
+        Food = 5,
     }
 
     public Camera cam;
@@ -19,7 +21,9 @@ public class BuildController : MonoBehaviour
     public FlowFieldGrid flowGrid;
     public GameObject wallPrefab;
     public GameObject hazardPrefab;
+    public GameObject attractorPrefab;
     public GameObject coinPrefab;
+    public GameObject foodPrefab;
 
     public int maxScale = 4;
     public int minScale = 0;
@@ -93,6 +97,11 @@ public class BuildController : MonoBehaviour
                 }
             }
         }
+
+        if (Input.GetMouseButtonDown(1))
+        {
+            SelectBuildMode(-1);
+        }
     }
 
     public void SelectBuildMode(int mode)
@@ -113,6 +122,15 @@ public class BuildController : MonoBehaviour
             case BuildMode.Coin:
                 ChangeMousePreview(coinPrefab);
                 break;
+
+            case BuildMode.Attractor:
+                ChangeMousePreview(attractorPrefab);
+                break;
+
+            case BuildMode.Food:
+                ChangeMousePreview(foodPrefab);
+                break;
+
             case BuildMode.Destroy:
                 ChangeMousePreview(null);
                 break;

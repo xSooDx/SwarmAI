@@ -1280,6 +1280,11 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 1153047469}
+    - target: {fileID: 2332694703566086065, guid: d285fd3387fc6834aa80fb3d29eefd5b,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: ExitGame
+      objectReference: {fileID: 0}
     - target: {fileID: 2390209732307855403, guid: d285fd3387fc6834aa80fb3d29eefd5b,
         type: 3}
       propertyPath: m_LocalPosition.z

@@ -10,9 +10,7 @@ public class FlowFieldGrid : MonoBehaviour
     public float m_GridCellSize = 1;
     public LayerMask m_CostModifierMask;
     public LayerMask m_FlowModifierMask;
-
     public int m_flowTestLayer = 31;
-
     Vector3[,] m_FlowGrid;
     Vector2[,] m_FlowDirection;
     byte[,] m_CostField;
@@ -21,7 +19,6 @@ public class FlowFieldGrid : MonoBehaviour
     Queue<Vector2Int> m_IntegrationQueue;
 
     [Header("DEBUG")]
-
     public bool debugCostField;
     public bool debugIntegrationField;
     public bool debugFlowField;
@@ -50,12 +47,8 @@ public class FlowFieldGrid : MonoBehaviour
         minIndexVal = Vector2Int.zero;
         gridHalfCellSize = m_GridCellSize / 2f;
 
-
-
-
         //float startTime = Time.realtimeSinceStartup;
         DetectCostObstacles();
-        //CalculateCostField();
         CalculateIntegrationField();
         CalculateFlowFieldVectors();
         //float endTime = Time.realtimeSinceStartup;
@@ -145,8 +138,6 @@ public class FlowFieldGrid : MonoBehaviour
                 }
             }
             c.gameObject.layer = tempLayer;
-            //Handles.DrawWireCube(c.bounds.center, c.bounds.size);
-            //Gizmos.DrawCube(c.bounds.center, c.bounds.size);
         }
     }
 
@@ -163,7 +154,7 @@ public class FlowFieldGrid : MonoBehaviour
                     byte cost = m_CostField[p.x, p.y];
                     if (cost < byte.MaxValue)
                     {
-                        float value = m_IntegrationField[index.x, index.y] + 0.2f * (n.x & 1) * (n.y & 1); ;
+                        float value = m_IntegrationField[index.x, index.y] + 0.4142f * (n.x & 1) * (n.y & 1); ;
                         value += cost;
 
                         if (value < m_IntegrationField[p.x, p.y])

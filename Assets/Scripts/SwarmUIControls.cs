@@ -112,6 +112,21 @@ public class SwarmUIControls : MonoBehaviour
         playerSpawn.gameObject.SetActive(false);
     }
 
+    public void Pause()
+    {
+        Time.timeScale = 0f;
+    }
+
+    public void Resume()
+    {
+        Time.timeScale = 1.0f;
+    }
+
+    public void BackToMenu()
+    {
+        SceneManager.LoadScene(0);
+    }
+
     internal void ShowStart()
     {
         startButton.gameObject.SetActive(true);

@@ -90,7 +90,6 @@ public class SwarmEntity : MonoBehaviour
             flowVector = Steer(flowVector) * (flowVector.y > 0? 25f : swarmSettings.flowWeight);
             maxSpeedModifier = flowEffect == 0 ? 1f : 0.8f;
             acceleration += flowVector;
-            //Debug.DrawRay(position, flowVector, Color.yellow);
         }
 
         if (count > 0)
@@ -102,10 +101,6 @@ public class SwarmEntity : MonoBehaviour
             avoidanceVector = Steer(avoidanceVector) * swarmSettings.avoidanceWeight;
             allignmentVector = Steer(allignmentVector) * swarmSettings.alignmentWeight;
             acceleration += allignmentVector + avoidanceVector + cohesionVector;
-            //Debug.DrawRay(position, cohesionVector, Color.green);
-            //Debug.DrawRay(position, avoidanceVector, Color.red);
-            //Debug.DrawRay(position, allignmentVector, Color.blue);
-
         }
         else
         {
@@ -117,7 +112,6 @@ public class SwarmEntity : MonoBehaviour
             obstacleVector /= obstacleCount;
             obstacleVector = Steer(obstacleVector) * 25;
             acceleration += obstacleVector;
-            //Debug.DrawRay(position, obstacleVector, Color.magenta);
         }
 
         if (swarmSettings.is2D)
